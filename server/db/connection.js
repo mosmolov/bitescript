@@ -1,5 +1,7 @@
+import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion } from "mongodb";
 
+dotenv.config();
 const uri = process.env.ATLAS_URI || "";
 const client = new MongoClient(uri, {
   serverApi: {
@@ -21,6 +23,6 @@ try {
   console.error(err);
 }
 
-let db = client.db("employees");
+let db = client.db();
 
 export default db;
