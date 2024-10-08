@@ -1,3 +1,13 @@
+// Feed
+export const getPosts = (req, res) => {
+    // TODO: database logic to retrieve all posts
+    res.status(200).json({ message: "Getting all posts" });
+}
+export const createPost = (req, res) => {
+    const { title, content } = req.body;
+    // TODO: database logic to create a new post
+    res.status(201).json({ message: "Created Post: ", title, content });
+}
 // Post logic
 export const getPost = (req, res) => {
     const { id } = req.params;

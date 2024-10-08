@@ -1,7 +1,11 @@
 import express from "express";
-import { getPost, deletePost, getPostLikes, getPostComments, likePost, unlikePost, postComment, updateComment, deleteComment } from "../controllers/posts.js";
+import { getPost, deletePost, getPostLikes, getPostComments, likePost, unlikePost, postComment, updateComment, deleteComment, getPosts, createPost} from "../controllers/posts.js";
 
 const router = express.Router();
+
+// Feed
+router.get("/", getPosts); 
+router.post("/", createPost); 
 
 //Post Logic
 router.get("/:id",getPost);
