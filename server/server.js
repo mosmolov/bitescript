@@ -6,10 +6,11 @@ import dotenv from "dotenv";
 dotenv.config();
 const PORT = process.env.PORT || 5050;
 const app = express();
+const authRoutes = require('./routes/auth')
 
 
 mongoose
-  .connect(process.env.ATLAS_URI)
+  .connect(process.env.ATLAS_URI)   //connect to the database
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -17,8 +18,12 @@ mongoose
     console.error(err);
   });
 
-app.use(cors());
-app.use(express.json());
+//middleware 
+app.use(cors());                //allows controlled access from server to different domains
+app.use(express.json());        //parses incoming json requests
+
+//routes
+app.use('api/auth',authRoutes);
 
 // start the Express server
 app.listen(PORT, () => {
