@@ -5,7 +5,7 @@ import User from "../models/user.js";
 
 
 export const login = async(req,res) => {
-    const { usernam, password } = req.body;
+    const { username, password } = req.body;
     try {
         //are we implementing login via username or email?
         const user = await User.findOne({ username });

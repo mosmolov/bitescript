@@ -8,8 +8,6 @@ import authRoutes from "./routes/auth.js";
 dotenv.config();
 const PORT = process.env.PORT || 5050;
 const app = express();
-const authRoutes = require('./routes/auth')
-
 
 mongoose
   .connect(process.env.ATLAS_URI)   //connect to the database
