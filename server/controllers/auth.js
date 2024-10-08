@@ -1,11 +1,10 @@
-const express = requre('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-const User = require('../models/user');
+import User from "../models/user.js";
 
 
-exports.login = async(req,res) => {
+export const login = async(req,res) => {
     const { usernam, password } = req.body;
     try {
         //are we implementing login via username or email?
@@ -28,7 +27,7 @@ exports.login = async(req,res) => {
     }
 }
 
-exports.register = async(req,res) => {
+export const register = async(req,res) => {
     const { email, username, password, firstName, lastName } = req.body;
     try {
         //username has to be unique
