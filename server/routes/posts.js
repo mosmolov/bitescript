@@ -1,5 +1,5 @@
 import express from "express";
-import { getPost, deletePost, getPostLikes, getPostComments, likePost, unlikePost, postComment, updateComment, deleteComment, getPosts, createPost} from "../controllers/posts.js";
+import { getPost, deletePost, likeOrDislikePost, postComment, updateComment, deleteComment, getPosts, createPost} from "../controllers/posts.js";
 
 const router = express.Router();
 
@@ -8,14 +8,11 @@ router.get("/", getPosts);
 router.post("/", createPost); 
 
 //Post Logic
-router.get("/:id",getPost);
+router.get("/:id",getPost); // include likes and comments
 router.delete("/:id",deletePost);
-router.get("/:id", getPostComments);
-router.get(":/id",getPostLikes);
 
 //Interactions with posts
-router.get("/:id/likes", likePost);
-router.delete("/:id/likes", unlikePost);
+router.path("/:id/likes", likeOrDislikePost);
 router.get("/:id/comments", postComment);
 
 //Comment functionality on posts
