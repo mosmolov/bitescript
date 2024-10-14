@@ -69,4 +69,18 @@ router.post("/import-ratings", async (req, res) => {
   }
 });
 
+router.post("/import-all", async (req, res) => {
+  try {
+    await importController.importRestaurants();
+    await importController.importCuisines();
+    await importController.importParking();
+    await importController.importPayments();
+    await importController.importOpenHours();
+    await importController.importRatings();
+    res.status(200).json({ message: "All data imported successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Import failed", details: error.message });
+  }
+});
+
 export default router;
