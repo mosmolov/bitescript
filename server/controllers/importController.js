@@ -5,7 +5,7 @@ import fs from "fs";
 // import path for handling file paths
 import path, { parse, resolve } from "path";
 import { fileURLToPath } from "url";
-import Restaurant from "../models/restaurant";
+import Restaurant from "../models/restaurant.js";
 import { rejects } from "assert";
 
 // fileURLToPath() converts a file URL into a file path that's usable in Node.js.
@@ -21,7 +21,9 @@ export const importRestaurants = async () => {
   // resolve is called when the asynchronous operation is successful. It changes the state of the Promise to "fulfilled". The value passed to resolve becomes the result of the Promise.
   // reject is called when the asynchronous operation fails. It changes the state of the Promise to "rejected". The error passed to reject becomes the reason for the Promise's failure.
   return new Promise((resolve, reject) => {
-    const results = [];
+    let rowCount = 0;
+    let skippedCount = 0;
+    let successCount = 0;
 
     // creates a readable stream from the specified file.
     fs.createReadStream(path.join(__dirname, "..", "dataset", "geoplaces2.csv"))
@@ -30,44 +32,57 @@ export const importRestaurants = async () => {
       // Each line of the CSV is converted into an object where the keys are the column headers and the values are the cell contents.
       .pipe(csv())
       // Event listener for each row of parsed CSV data, adds each row to the results array
-      .on("data", (data) => results.push(data))
-      // Event listener for when file reading is complete, place for final processing of the collected data
-      .on("end", async () => {
+      .on("data", async (row) => {
+        rowCount++;
         try {
-          // Once the file is fully read, we iterate over each row in the results array.
-          for (const row of results) {
-            // For each row, we create a restaurantData object that matches our schema structure.
-            const restaurantData = {
-              placeID: row.placeID,
-              name: row.name,
-              address: row.address || "",
-              city: row.city || "",
-              state: row.state || "",
-              zip: row.zip || "",
-              location: {
-                type: "Point",
-                coordinates: [
-                  parseFloat(row.longtitude),
-                  parseFloat(row.latitude),
-                ],
-              },
-            };
+          const longitude = parseFloat(row.longitude);
+          const latitude = parseFloat(row.latitude);
 
-            await Restaurant.findOneAndUpdate(
-              { placeID: row.placeID },
-              restaurantData,
-              // The upsert: true option means it will create a new document if one doesn't exist with the given placeID.
-              // new: true returns the updated document.
-              // runValidators: true ensures that the data meets our schema requirements.
-              { upsert: true, new: true, runValidators: true }
+          if (isNaN(longitude) || isNaN(latitude)) {
+            console.log(
+              "Skipping row ${rowCount} due to invalid coordinates: longtitude=${row.longtitude}, latitude=${row.latitude}"
             );
+            skippedCount++;
+            return;
           }
-          console.log("Restaurant data imported successfully");
-          resolve();
+
+          const restaurantData = {
+            placeID: row.placeID,
+            name: row.name,
+            address: row.address || "",
+            city: row.city || "",
+            state: row.state || "",
+            zip: row.zip || "",
+            location: {
+              type: "Point",
+              coordinates: [longitude, latitude],
+            },
+          };
+
+          await Restaurant.findOneAndUpdate(
+            { placeID: row.placeID },
+            restaurantData,
+            // The upsert: true option means it will create a new document if one doesn't exist with the given placeID.
+            // new: true returns the updated document.
+            // runValidators: true ensures that the data meets our schema requirements.
+            { upsert: true, new: true, runValidators: true }
+          );
+          successCount++;
         } catch (error) {
-          console.error("Error importing restaurant data", error);
-          reject(error);
+          console.error(`Error processing row ${rowCount}:`, error.message);
+          skippedCount++;
         }
+      })
+      // Event listener for when file reading is complete, place for final processing of the collected data
+      .on("end", () => {
+        console.log(`Import completed. Processed ${rowCount} rows.`);
+        console.log(`Successfully imported: ${successCount}`);
+        console.log(`Skipped: ${skippedCount}`);
+        resolve();
+      })
+      .on("error", (error) => {
+        console.error("Error reading CSV:", error);
+        reject(error);
       });
   });
 };

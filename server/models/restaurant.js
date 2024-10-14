@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { unique } from "next/dist/build/utils";
 
 const restaurant = new mongoose.Schema({
   placeID: { type: String, required: true, unique: true },
@@ -27,7 +26,7 @@ const restaurant = new mongoose.Schema({
   ratings: [
     {
       userId: String,
-      rating: { Type: Number, required: true, min: 1, max: 5 },
+      rating: { type: Number, required: true, min: 1, max: 5 },
       food_rating: { type: Number, min: 1, max: 5 },
       service_rating: { type: Number, min: 1, max: 5 },
       comment: { type: String, maxLength: 500 },
@@ -40,7 +39,7 @@ const restaurant = new mongoose.Schema({
 });
 
 // Create a geospatial index on the location field for efficient proximity searches, fiding nearby restaurants
-restaurant.index({ location: "2dsphre" });
+restaurant.index({ location: "2dsphere" });
 // Create an index on the averageRating filed in descending order for quickly retrieveing top-rated restaurants or sorting by rating
 restaurant.index({ averageRating: -1 });
 
