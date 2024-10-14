@@ -23,7 +23,7 @@ app.use(cors());                //allows controlled access from server to differ
 app.use(express.json());        //parses incoming json requests
 
 //routes
-app.use('api/auth',authRoutes);
+app.use('/api/auth',authRoutes);
 
 // start the Express server
 app.listen(PORT, () => {

@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true, // Assuming this is a unique identifier
-  },
+  // id: {
+  //   type: String,
+  //   required: true,
+  //   unique: true, // Assuming this is a unique identifier
+  // },
   email: {
     type: String,
     required: true,
