@@ -26,9 +26,9 @@ const restaurant = new mongoose.Schema({
   ratings: [
     {
       userId: String,
-      rating: { type: Number, required: true, min: 1, max: 5 },
-      food_rating: { type: Number, min: 1, max: 5 },
-      service_rating: { type: Number, min: 1, max: 5 },
+      rating: { type: Number, required: true, min: 0, max: 5 },
+      food_rating: { type: Number, min: 0, max: 5 },
+      service_rating: { type: Number, min: 0, max: 5 },
       comment: { type: String, maxLength: 500 },
       date: { type: Date, default: Date.now },
     },
@@ -42,6 +42,20 @@ const restaurant = new mongoose.Schema({
 restaurant.index({ location: "2dsphere" });
 // Create an index on the averageRating filed in descending order for quickly retrieveing top-rated restaurants or sorting by rating
 restaurant.index({ averageRating: -1 });
+restaurant.index(
+  {
+    name: "text",
+    cuisine: "text",
+    description: "text",
+  },
+  {
+    weights: {
+      name: 10,
+      cuisine: 5,
+      description: 1,
+    },
+  }
+);
 
 // This middleware function runs before every save operation on a restaurant document, automatically updates the averageRating and totalRatings filed based on the current state of the ratings array
 restaurant.pre("save", function (next) {

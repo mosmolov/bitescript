@@ -3,6 +3,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import importRoutes from "./routes/importRoutes.js";
+import restaurantRoutes from "./routes/restaurantRoutes.js";
+import Restaurant from "./models/restaurant.js";
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +20,11 @@ mongoose
   .connect(process.env.ATLAS_URI)
   .then(() => {
     console.log("Connected to MongoDB");
+    // It provides an automated way to ensure your database indexes always match your schema definition, which can prevent subtle bugs and performance issues in the future.
+    return Restaurant.syncIndexes();
+  })
+  .then(() => {
+    console.log("Indexes are synchronized");
   })
   .catch((err) => {
     console.error(err);
@@ -29,6 +36,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api", importRoutes);
+app.use("/api/restaurants", restaurantRoutes);
 
 // start the Express server
 app.listen(PORT, () => {

@@ -216,44 +216,71 @@ export const importOpenHours = async () => {
 };
 
 export const importRatings = async () => {
+  const ratingsByRestaurant = new Map();
+  let rowCount = 0;
+
   return new Promise((resolve, reject) => {
+    console.log("Starting to read CSV file...");
     fs.createReadStream(
       path.join(__dirname, "..", "dataset", "rating_final.csv")
     )
       .pipe(csv())
-      .on("data", async (row) => {
-        try {
-          const rating = {
-            userId: row.userId, // Keep as String, no conversion needed
-            rating: parseFloat(row.rating),
-            food_rating: parseFloat(row.food_rating),
-            service_rating: parseFloat(row.service_rating),
-            date: new Date(),
-          };
-
-          await Restaurant.findOneAndUpdate(
-            { placeID: row.placeID },
-            {
-              // Adds the new rating object to the ratings array
-              $push: { ratings: rating },
-              // Increment the totalRatings field by 1.
-              $inc: { totalRatings: 1 },
-              // Add the new rating, increment the total number of ratings, recaculate the average rating
-              $set: {
-                averageRating: {
-                  $avg: { $concatArrays: ["$ratings.rating", [rating.rating]] },
-                },
-              },
-            },
-            { upsert: true, new: true }
-          );
-        } catch (error) {
-          console.error("Error updating rating:", error);
+      .on("data", (row) => {
+        rowCount++;
+        if (rowCount % 10000 === 0) {
+          console.log(`Processed ${rowCount} rows`);
         }
+
+        const rating = {
+          userId: row.userID,
+          rating: parseFloat(row.rating),
+          food_rating: parseFloat(row.food_rating),
+          service_rating: parseFloat(row.service_rating),
+          date: new Date(),
+        };
+
+        if (!ratingsByRestaurant.has(row.placeID)) {
+          ratingsByRestaurant.set(row.placeID, []);
+        }
+        ratingsByRestaurant.get(row.placeID).push(rating);
       })
-      .on("end", () => {
-        console.log("Ratings import completed");
-        resolve();
+      .on("end", async () => {
+        console.log(`Finished reading CSV. Total rows: ${rowCount}`);
+        console.log(
+          `Number of unique restaurants: ${ratingsByRestaurant.size}`
+        );
+        try {
+          console.log("Preparing bulk write operations...");
+          const bulkOps = [];
+
+          for (const [placeID, ratings] of ratingsByRestaurant) {
+            const totalRatings = ratings.length;
+            const averageRating =
+              ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings;
+
+            bulkOps.push({
+              updateOne: {
+                filter: { placeID: placeID },
+                update: {
+                  $set: { ratings, totalRatings, averageRating },
+                },
+                upsert: true,
+              },
+            });
+          }
+
+          console.log(
+            `Starting bulk write for ${bulkOps.length} operations...`
+          );
+          const result = await Restaurant.bulkWrite(bulkOps);
+          console.log("Bulk write completed. Result:", result);
+
+          console.log("Ratings import completed");
+          resolve();
+        } catch (error) {
+          console.error("Error updating ratings:", error);
+          reject(error);
+        }
       })
       .on("error", (error) => {
         console.error("Error reading ratings CSV:", error);
