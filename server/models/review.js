@@ -23,12 +23,12 @@ const reviewSchema = new mongoose.Schema(
   {
     restaurant_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "restaurant", // assuming you have a Restaurant model
+      ref: "Restaurant", // assuming you have a Restaurant model
       required: true,
     },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user", // assuming you have a User model
+      ref: "User", // assuming you have a User model
       required: true,
     },
     overall_rating: {
@@ -62,7 +62,7 @@ const reviewSchema = new mongoose.Schema(
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user", // referencing User model for likes
+        ref: "User", // referencing User model for likes
       },
     ],
     comments: [commentSchema], // an array of embedded comment objects
