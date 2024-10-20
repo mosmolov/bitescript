@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
-import { use } from "bcrypt/promises.js";
 
 
 export const login = async(req,res) => {
@@ -9,14 +8,11 @@ export const login = async(req,res) => {
     try {
         //are we implementing login via username or email?
         const user = await User.findOne({ username });
-        if(!user) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if(!user || !isMatch) {
             res.status(400).json({ message: "Incorrect username or password."});
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            res.status(400).json({ message: "Incorrect username or password."});
-        }
         
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: "1h" //we can change this later
@@ -63,7 +59,6 @@ export const register = async(req,res) => {
             picture: '', // set to a default picture?
             following: [],
             followers: [],
-            createdTimestamp: Date.now()
         });
 
         await newUser.save();
@@ -75,7 +70,7 @@ export const register = async(req,res) => {
                 username: newUser.username,
                 firstName: newUser.firstName,
                 lastName: newUser.lastName
-            }
+            },
         })
     } catch(err) {
         res.status(500).json({ message: "Server error", error: err.message });
