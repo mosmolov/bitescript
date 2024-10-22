@@ -3,14 +3,24 @@ import './App.css';
 import LoginPage from './components/LoginPage'
 import CreateAccountPage from './components/CreateAccountPage'
 import Home from './components/Home';
+import ProfilePage from './components/ProfilePage';
+import { useEffect, useState } from "react";
+
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log(token);
+  });
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        {/*routes login page and create account page from the home page */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/create-account" element={<CreateAccountPage />} />
+        <Route path="/" element={<Home user={user}/>} />
+        <Route path="/login" element={<LoginPage setUser={setUser}/>} />
+        <Route path="/create-account" element={<CreateAccountPage/>} />
+        <Route path="/users/:id" element={<ProfilePage user={user}/>} />
       </Routes>
     </Router>
   );

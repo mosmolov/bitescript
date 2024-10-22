@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.js";
 import importRoutes from "./routes/importRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 import Restaurant from "./models/restaurant.js";
+import cookieParser from "cookie-parser";
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,7 @@ mongoose
 //middleware 
 app.use(cors());                //allows controlled access from server to different domains
 app.use(express.json());        //parses incoming json requests
+app.use(cookieParser()) // allows cookies
 
 // Routes
 app.use("/api", importRoutes);
