@@ -1,5 +1,5 @@
-import logo from "../logo.png";
 import React from 'react';
+import logo from "../logo.png";
 import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage = ({setUser}) => {
@@ -50,7 +50,7 @@ const LoginPage = ({setUser}) => {
         </Link>
       </div>
       <div className="flex flex-col items-center">
-      <Link to="/"><img src={logo} alt="Bitescript Logo" className="h-24 mb-4"></img></Link>
+        <img src="/path/to/logo.png" alt="Bitescript Logo" className="h-24 mb-4" />
         <h1 className="font-handwritten text-4xl mb-6">login</h1>
       </div>
 
