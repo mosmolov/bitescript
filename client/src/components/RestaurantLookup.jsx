@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import logo from "../logo.png";
+import { Link } from "react-router-dom";
 const RestaurantSearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [restaurants, setRestaurants] = useState([]);
@@ -60,8 +61,10 @@ const RestaurantSearchPage = () => {
     <div className="min-h-screen w-full bg-[#FAF6EF] p-4">
       <div className="w-full max-w-md mx-auto">
         <div className="flex items-center mb-6 justify-center align-center">
-          {/* <button className="text-2xl mr-4">&#x2190;</button> */}
-          <img src={logo} alt="Bitescript Logo" className="h-24" />
+          <Link to="/">
+            {/* <button className="text-2xl mr-4">&#x2190;</button> */}
+            <img src={logo} alt="Bitescript Logo" className="h-24" />
+          </Link>
         </div>
 
         <div className="flex items-center mb-6">
@@ -83,7 +86,7 @@ const RestaurantSearchPage = () => {
               <h2 className="font-bold text-xl">
                 {restaurant.name} {restaurant.price}
               </h2>
-              <p className="text-gray-600">{restaurant.cuisine}</p>
+              <p className="text-gray-600">{restaurant.cuisine.join(" | ")}</p>
               <p className="text-gray-600">
                 {restaurant.city}, {restaurant.state}
               </p>

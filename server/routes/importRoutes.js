@@ -83,4 +83,14 @@ router.post("/import-all", async (req, res) => {
   }
 });
 
+router.post("/import-yelp", async (req, res) => {
+  try {
+    await importController.importYelpData();
+    res.status(200).json({ message: "Yelp data imported successfully." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Import Yelp data failed", details: error.message });
+  }
+});
 export default router;
