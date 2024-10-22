@@ -21,7 +21,7 @@ const RestaurantSearchPage = () => {
       }));
     } catch (err) {
       console.error("Error fetching country:", err);
-      setCountries((prev) => ({ ...prev, [restaurantId]: "Unknown Country" }));
+      setCountries((prev) => ({ ...prev, [restaurantId]: "" }));
     }
   };
 
@@ -111,7 +111,7 @@ const RestaurantSearchPage = () => {
                     <span>
                       {countries[restaurant.id]
                         ? `${countries[restaurant.id]}`
-                        : " (Fetching country...)"}
+                        : ""}
                     </span>
                   </>
                 ) : (
