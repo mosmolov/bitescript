@@ -13,10 +13,12 @@ export const LandingPage = () => {
           <img src={logo} alt="Bitescript Logo" className="h-24 mr-2" />
         </div>
         <div className="flex space-x-6 text-lg">
+          <Link to="/search">x
           <button className="flex items-center space-x-2">
             <img src={Compass} alt=""/>
             <span>Feed</span>
           </button>
+          </Link>
           <button className="flex items-center space-x-2">
             <img src={Search} alt=""/>
             <span>Search</span>
