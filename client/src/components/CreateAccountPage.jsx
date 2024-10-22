@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import logo from "../logo.png";
 import { Link } from "react-router-dom";
 export const CreateAccountPage = () => {
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     email: "",
     firstName: "",
     lastName: "",
@@ -30,7 +30,12 @@ export const CreateAccountPage = () => {
       },
       body: JSON.stringify({ email, username, password, firstName, lastName }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.ok) {
+          alert("Account created successfully. Please log in.");
+          window.location = "/login";
+        }
+      })
       .catch((err) => {
         console.error(err);
         alert("An error occurred. Please try again later.");

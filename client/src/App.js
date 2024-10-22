@@ -3,6 +3,7 @@ import './App.css';
 import LoginPage from './components/LoginPage'
 import CreateAccountPage from './components/CreateAccountPage'
 import Home from './components/Home';
+import RestaurantLookUpPage from "./components/RestaurantLookup";
 function App() {
   return (
     <Router>
@@ -11,6 +12,7 @@ function App() {
         {/*routes login page and create account page from the home page */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/create-account" element={<CreateAccountPage />} />
+        <Route path="/search" element={<RestaurantLookUpPage />} />
       </Routes>
     </Router>
   );

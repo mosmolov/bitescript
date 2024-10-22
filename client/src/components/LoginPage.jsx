@@ -1,5 +1,5 @@
 import React from 'react';
-
+import logo from "../logo.png";
 const LoginPage = () => {
   const [formData, setFormData] = React.useState({
     username: '',
@@ -20,7 +20,7 @@ const LoginPage = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.body({ username, password }),
+      body: JSON.stringify({ username, password }),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -43,7 +43,7 @@ const LoginPage = () => {
         <button className="text-2xl mb-4">&#x2190;</button>
       </div>
       <div className="flex flex-col items-center">
-        <img src="/path/to/logo.png" alt="Bitescript Logo" className="h-24 mb-4" />
+        <img src={logo} alt="Bitescript Logo" className="h-24 mb-4" />
         <h1 className="font-handwritten text-4xl mb-6">login</h1>
       </div>
 
