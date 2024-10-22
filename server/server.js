@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import userRoutes from "./routes/users.js";
+import postRoutes from "./routes/posts.js";
 import authRoutes from "./routes/auth.js";
 import importRoutes from "./routes/importRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
@@ -39,6 +41,8 @@ app.use(express.json());        //parses incoming json requests
 app.use("/api", importRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use('/api/auth',authRoutes);
+app.use("/api/posts",postRoutes);
+app.use("/api/users", userRoutes);
 
 // start the Express server
 app.listen(PORT, () => {
