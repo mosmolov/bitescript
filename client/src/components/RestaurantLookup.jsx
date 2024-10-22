@@ -59,8 +59,8 @@ const RestaurantSearchPage = () => {
   return (
     <div className="min-h-screen w-full bg-[#FAF6EF] p-4">
       <div className="w-full max-w-md mx-auto">
-        <div className="flex items-center mb-6 justify-center">
-          <button className="text-2xl mr-4">&#x2190;</button>
+        <div className="flex items-center mb-6 justify-center align-center">
+          {/* <button className="text-2xl mr-4">&#x2190;</button> */}
           <img src={logo} alt="Bitescript Logo" className="h-24" />
         </div>
 

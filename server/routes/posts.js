@@ -12,7 +12,7 @@ router.get("/:id",getPost); // include likes and comments
 router.delete("/:id",deletePost);
 
 //Interactions with posts
-router.path("/:id/likes", likeOrDislikePost);
+router.post("/:id/likes", likeOrDislikePost);
 router.get("/:id/comments", postComment);
 
 //Comment functionality on posts
