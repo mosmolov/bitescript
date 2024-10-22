@@ -290,39 +290,39 @@ export const importRatings = async () => {
 };
 
 // Read and parse the JSON file
-const jsonData = fs.readFileSync(path.join(__dirname, "..", "dataset", "yelp_academic_dataset_business.json"), 'utf-8');
-const restaurantsData = jsonData.split('\n').filter(line => line).map(line => JSON.parse(line));
+// const jsonData = fs.readFileSync(path.join(__dirname, "..", "dataset", "yelp_academic_dataset_business.json"), 'utf-8');
+// const restaurantsData = jsonData.split('\n').filter(line => line).map(line => JSON.parse(line));
 
-// Transform the data to match your schema
-const transformedRestaurants = restaurantsData.map((data) => {
-  return {
-    placeID: data.business_id,
-    name: data.name,
-    address: data.address,
-    city: data.city,
-    state: data.state,
-    zip: data.postal_code,
-    location: {
-      type: 'Point',
-      coordinates: [data.longitude, data.latitude],
-    },
-    cuisine: data.categories ? data.categories.split(',').map(cat => cat.trim()) : [],
-    totalRatings: data.review_count,
-    averageRating: data.stars,
-    parking: "",
-    hours: data.hours ? Object.entries(data.hours).map(([day, time]) => {
-      const [open, close] = time.split('-');
-      return { day, open, close };
-    }) : [],
-    payments: data.attributes?.BusinessAcceptsCreditCards === 'True' ? ['Credit Card'] : [],
-  };
-});
+// // Transform the data to match your schema
+// const transformedRestaurants = restaurantsData.map((data) => {
+//   return {
+//     placeID: data.business_id,
+//     name: data.name,
+//     address: data.address,
+//     city: data.city,
+//     state: data.state,
+//     zip: data.postal_code,
+//     location: {
+//       type: 'Point',
+//       coordinates: [data.longitude, data.latitude],
+//     },
+//     cuisine: data.categories ? data.categories.split(',').map(cat => cat.trim()) : [],
+//     totalRatings: data.review_count,
+//     averageRating: data.stars,
+//     parking: "",
+//     hours: data.hours ? Object.entries(data.hours).map(([day, time]) => {
+//       const [open, close] = time.split('-');
+//       return { day, open, close };
+//     }) : [],
+//     payments: data.attributes?.BusinessAcceptsCreditCards === 'True' ? ['Credit Card'] : [],
+//   };
+// });
 
-export const importYelpData = async () => {
-  try {
-    await Restaurant.insertMany(transformedRestaurants);
-    console.log('Yelp data imported successfully');
-  } catch (error) {
-    console.error('Error importing Yelp data:', error);
-  }
-}
+// export const importYelpData = async () => {
+//   try {
+//     await Restaurant.insertMany(transformedRestaurants);
+//     console.log('Yelp data imported successfully');
+//   } catch (error) {
+//     console.error('Error importing Yelp data:', error);
+//   }
+// }

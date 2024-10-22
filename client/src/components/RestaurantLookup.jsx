@@ -8,13 +8,16 @@ const RestaurantSearchPage = () => {
   const getCountryFromCoordinates = async (coordinates, restaurantId) => {
     try {
       const [lng, lat] = coordinates;
+      if (countries[restaurantId]) {
+        return;
+      }
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
       );
       const data = await response.json();
       setCountries((prev) => ({
         ...prev,
-        [restaurantId]: data.address?.country || "Unknown Country",
+        [restaurantId]: data.address.country,
       }));
     } catch (err) {
       console.error("Error fetching country:", err);
@@ -80,13 +83,25 @@ const RestaurantSearchPage = () => {
         {restaurants.map((restaurant) => (
           <div
             key={restaurant.id}
-            className="bg-white border border-black rounded-xl p-4 mb-4 flex justify-between items-center"
+            className="bg-white border border-black rounded-xl p-4 mb-4 flex justify-between items-center relative"
           >
+            {/* Rating Badge */}
+            <div
+              className={`absolute top-2 right-4 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center ${
+                restaurant.averageRating >= 4
+                  ? "bg-green-500"
+                  : restaurant.averageRating >= 3
+                  ? "bg-yellow-500"
+                  : "bg-red-500"
+              }`}
+            >
+              {restaurant.averageRating.toFixed(1)}
+            </div>
             <div>
               <h2 className="font-bold text-xl">
                 {restaurant.name} {restaurant.price}
               </h2>
-              <p className="text-gray-600">{restaurant.cuisine.join(" | ")}</p>
+              <p className="text-gray-600">{restaurant.cuisine.slice(0,4).join(" | ")}</p>
               <p className="text-gray-600">
                 {restaurant.city}, {restaurant.state}
               </p>
@@ -95,7 +110,7 @@ const RestaurantSearchPage = () => {
                   <>
                     <span>
                       {countries[restaurant.id]
-                        ? ` ${countries[restaurant.id]}`
+                        ? `${countries[restaurant.id]}`
                         : " (Fetching country...)"}
                     </span>
                   </>
