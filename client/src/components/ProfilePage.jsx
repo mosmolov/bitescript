@@ -9,6 +9,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 const ProfilePage = ({ user }) => {
   const [topRatedRestaurants, setTopRatedRestaurants] = useState([]);
+  const [profileImage, setProfileImage] = useState("");
   const [profileUser, setProfileUser] = useState(null);
   const navigate = useNavigate();
   const { id } = useParams();
@@ -20,6 +21,13 @@ const ProfilePage = ({ user }) => {
       .then((res) => res.json())
       .then((data) => setProfileUser(data.user));
     if (!user) window.location.href = "/login";
+    fetch("https://randomuser.me/api/")
+      .then((response) => response.json())
+      .then((data) => {
+        const imageUrl = data.results[0].picture.large;
+        setProfileImage(imageUrl) // logs the large image URL
+      })
+      .catch((error) => console.error("Error:", error));
   }, []);
 
   useEffect(() => {
@@ -89,11 +97,11 @@ const ProfilePage = ({ user }) => {
             </button>
           </Link>
           {/* <Link to={user ? "/profile" : "/login"}> */}
-            <button className="flex items-center space-x-2">
-              <img src={Profile} alt="" />
-              {/* <Link to="/profile">Profile</Link> */}
-              <span>Profile</span>
-            </button>
+          <button className="flex items-center space-x-2">
+            <img src={Profile} alt="" />
+            {/* <Link to="/profile">Profile</Link> */}
+            <span>Profile</span>
+          </button>
           {/* </Link> */}
         </div>
       </nav>
@@ -101,8 +109,9 @@ const ProfilePage = ({ user }) => {
         <div className="flex flex-row items-center justify-between p-6">
           <div className="flex flex-row gap-4">
             <div className="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-white text-2xl font-bold">
-              {profileUser.firstName[0].toUpperCase()}
-              {profileUser.lastName[0].toUpperCase()}
+              {/* {profileUser.firstName[0].toUpperCase()}
+              {profileUser.lastName[0].toUpperCase()} */}
+              <img src={profileImage} alt="Profile" className="w-20 h-20 rounded-full" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
