@@ -7,7 +7,7 @@ export const CreateAccountPage = () => {
     firstName: "",
     lastName: "",
     username: "",
-    newPassword: "",
+    password: "",
     confirmPassword: "",
   });
 
@@ -18,8 +18,8 @@ export const CreateAccountPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { email, firstName, lastName, username, newPassword, confirmPassword } = formData;
-    if (newPassword !== confirmPassword) {
+    const { email, firstName, lastName, username, password, confirmPassword } = formData;
+    if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
@@ -28,17 +28,9 @@ export const CreateAccountPage = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, username, newPassword, firstName, lastName }),
+      body: JSON.stringify({ email, username, password, firstName, lastName }),
     })
       .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          alert(data.message);
-        } else {
-          alert("Account created successfully");
-          window.location = "/login";
-        }
-      })
       .catch((err) => {
         console.error(err);
         alert("An error occurred. Please try again later.");
@@ -99,9 +91,9 @@ export const CreateAccountPage = () => {
         />
         <input
           type="password"
-          name="newPassword"
+          name="password"
           placeholder="new password"
-          value={formData.newPassword}
+          value={formData.password}
           onChange={handleChange}
           className="w-full bg-white border border-black rounded-full px-4 py-3 placeholder-gray-400 text-center"
         />
