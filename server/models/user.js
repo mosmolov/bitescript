@@ -1,11 +1,6 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true, // Assuming this is a unique identifier
-  },
   email: {
     type: String,
     required: true,
@@ -46,12 +41,10 @@ const userSchema = new mongoose.Schema({
       ref: 'User', // Reference to other users' IDs in the same collection
     }
   ],
-  createdTimestamp: {
-    type: Number,
-    default: Date.now, // Set default to current timestamp
-  }
+}, {
+  timestamps: true, // Automatically add createdAt and updatedAt fields
 });
 
 // Create and export the User model
 const User = mongoose.model('User', userSchema);
-module.exports = User;
+export default User;
