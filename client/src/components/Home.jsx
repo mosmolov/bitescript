@@ -24,8 +24,8 @@ export const Home = ({user}) => {
             </button>
           </Link>
           <button className="flex items-center space-x-2">
+            <Link to={user ? "/profile" : "/login"}>Profile</Link>
             <img src={Profile} alt=""/>
-            <span>Profile</span>
           </button>
         </div>
       </nav>
