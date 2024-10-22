@@ -43,14 +43,9 @@ const LoginPage = ({setUser}) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAF6EF] flex flex-col items-center p-4">
-      <div className="w-full max-w-md">
-        <Link to="/">
-        <button className="text-2xl mb-4">&#x2190;</button>
-        </Link>
-      </div>
+    <div className="min-h-screen w-full bg-[#EAE8E0] flex flex-col items-center p-4">
       <div className="flex flex-col items-center">
-        <img src="/path/to/logo.png" alt="Bitescript Logo" className="h-24 mb-4" />
+        <img src={logo} alt="Bitescript Logo" className="h-24 mb-4" />
         <h1 className="font-handwritten text-4xl mb-6">login</h1>
       </div>
 
