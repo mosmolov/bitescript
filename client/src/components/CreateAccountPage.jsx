@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import logo from "../logo.png";
-
+import { Link } from "react-router-dom";
 export const CreateAccountPage = () => {
   const [formData, setFormData] = React.useState({
     email: "",
@@ -38,11 +38,13 @@ export const CreateAccountPage = () => {
   };
   return (
     <div className="min-h-screen w-full bg-[#FAF6EF] flex flex-col items-center p-4">
-      <div className="w-full max-w-md">
-        <button className="text-2xl mb-4">&#x2190;</button>
+      <div className="w-full max-w-md absolute top-4 left-4">
+        <Link to="/">
+        <button className="text-2xl">&#x2190;</button>
+        </Link>
       </div>
       <div className="flex flex-col items-center">
-        <img src={logo} alt="Bitescript Logo" className="h-24 mb-4" />
+        <Link to="/"><img src={logo} alt="Bitescript Logo" className="h-24 mb-4"></img></Link>
         <h1
           className="font-handwritten text-4xl mb-6"
           style={{ fontFamily: '"Just Me Again Down Here", cursive' }}
