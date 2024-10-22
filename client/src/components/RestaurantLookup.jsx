@@ -83,12 +83,13 @@ const RestaurantSearchPage = () => {
               <span>Search</span>
             </button>
           </Link>
-          <Link to={"/profile"}>
+          {/* <Link to={"/profile"}> */}
             <button className="flex items-center space-x-2">
               <img src={Profile} alt="" />
-              <Link to="/profile">Profile</Link>
+              <span>Profile</span>
+              {/* <Link to="/profile">Profile</Link> */}
             </button>
-          </Link>
+          {/* </Link> */}
         </div>
       </nav>
       <div className="w-full max-w-md mx-auto">

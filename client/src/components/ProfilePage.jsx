@@ -88,12 +88,13 @@ const ProfilePage = ({ user }) => {
               <span>Search</span>
             </button>
           </Link>
-          <Link to={user ? "/profile" : "/login"}>
+          {/* <Link to={user ? "/profile" : "/login"}> */}
             <button className="flex items-center space-x-2">
               <img src={Profile} alt="" />
-              <Link to="/profile">Profile</Link>
+              {/* <Link to="/profile">Profile</Link> */}
+              <span>Profile</span>
             </button>
-          </Link>
+          {/* </Link> */}
         </div>
       </nav>
       <div className="max-w-2xl mx-auto">
