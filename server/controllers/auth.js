@@ -13,21 +13,21 @@ export const login = async(req,res) => {
             res.status(400).json({ message: "Incorrect username or password."});
         }
 
-        
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: "1h" //we can change this later
         });
 
+        res.cookie("jwt", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict', // Prevent CSRF attacks
+            maxAge: 1 * 60 * 60 * 1000, // 1 hour
+        });
+
         res.status(201).json({
             message: "User authenticated successfully",
-            user: {
-                id: user._id,
-                email: user.email,
-                username: user.username,
-                firstName: user.firstName,
-                lastName: user.lastName
-            },
-            token: token
+            token,
+            user,
         })
 
     } catch(err) {
