@@ -289,7 +289,12 @@ export const importRatings = async () => {
 };
 
 //Read and parse the JSON file
-const jsonData = fs.readFileSync(path.join(__dirname, "..", "dataset", "yelp_academic_dataset_business.json"), 'utf-8');
+let jsonData = "";
+try {
+  jsonData = fs.readFileSync(path.join(__dirname, "..", "dataset", "yelp_academic_dataset_business.json"), 'utf-8');
+} catch (error) {
+  console.warn("Yelp dataset not found, skipping Yelp data import.");
+}
 const restaurantsData = jsonData.split('\n').filter(line => line).map(line => JSON.parse(line));
 
 // Transform the data to match your schema
