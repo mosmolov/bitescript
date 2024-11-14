@@ -12,8 +12,8 @@ router.get("/:id",getPost); // include likes and comments
 router.delete("/:id",deletePost);
 
 //Interactions with posts
-router.post("/:id/likes", likeOrUnlikePost);
-router.post("/:id/comments", postComment);
+router.patch("/:id/likes", likeOrUnlikePost);
+router.patch("/:id/comments", postComment);
 
 //Comment functionality on posts
 router.patch("/:id/comments",updateComment);
