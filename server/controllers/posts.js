@@ -1,54 +1,169 @@
+import Post from "../models/posts.js";
+import Comment from "../models/comments.js";
+import mongoose from "mongoose";
+
 // Feed
-export const getPosts = (req, res) => {
-    // TODO: database logic to retrieve all posts
-    res.status(200).json({ message: "Getting all posts" });
+export const getPosts = async (req, res) => { // works
+    try {
+        const posts = await Post.find(); // Fetch all posts
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving posts", error });
+    }
 }
-export const createPost = (req, res) => {
-    const { id } = req.params;
-    const post = req.body;
-
-    // TODO: database logic to create a new post
-    res.status(201).json({ message: "Created Post: ", post });
+export const createPost = async (req, res) => { //works
+    const postData = req.body; 
+    try {
+        const newPost = await Post.create(postData); // Create a new post
+        res.status(201).json({ message: "Created Post", post: newPost });
+    } catch (error) {
+        res.status(500).json({ message: "Error creating post", error });
+    }
 }
-
 // Post logic
-export const getPost = (req, res) => {
+export const getPost = async (req, res) => { //works
     const { id } = req.params;
-    // TODO: database logic
-    res.status(200).json({id});
+    try {
+        const post = await Post.findById(id); 
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        res.status(200).json(post);
+    } catch (error) {
+        res.status(500).json({ message: "Error getting post", error });
+    }
 }
-export const deletePost = (req, res) => {
+export const deletePost = async (req, res) => { //works 
     const { id } = req.params;
-    // TODO: database logic
-    res.status(200).json({id});
+    try {
+        const deletedPost = await Post.findByIdAndDelete(id); 
+        if (!deletedPost) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        res.status(200).json({ message: "Post deleted", deletedPost });
+    } catch (error) {
+        res.status(500).json({ message: "Couldn't delete post", error });
+    }
 }
-
-
 // Interactions with post
-export const likeOrDislikePost = (req, res) => {
-    const {id} = req.params;
-    const {post, userID} = req.body;
-    // TODO: database logic
-    res.status(200).json({id});
+export const likeOrUnlikePost = async (req, res) => { // works
+    console.log("likeOrUnlikePost route hit");
+    const { id } = req.params; // Post ID
+    const { userId } = req.body;
+    console.log("Created");
+    try {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).json({ message: "Error: Post not found" });
+        }
+        const hasUserLiked = post.likes.some(like => like.equals(userId));
+        if (hasUserLiked) {
+            post.likes = post.likes.filter(like => !like.equals(userId));
+            post.likeCount -= 1;
+            await post.save();
+            return res.status(200).json({message: "Post unliked", likeCount: post.likeCount, likes: post.likes});
+        } else {
+            post.likes.push(userId);
+            post.likeCount += 1;
+            await post.save();
+            return res.status(200).json({message: "Post liked", likeCount: post.likeCount, likes: post.likes});
+        }
+    } catch (error) {
+        console.error("Error in likeOrUnlikePost:", error);
+        return res.status(500).json({ message: "Server error", error });
+    }
 }
 
-export const postComment = (req, res) => {
+export const postComment = async (req, res) => { // works
     const { id } = req.params;
-    const {post, userID} = req.body;
-    // TODO: database logic
-    res.status(200).json({id});
-}
+    const { commentText, userId } = req.body;
+    console.log(commentText);
+    console.log(userId);
+    try {
+        if (!commentText || !userId) {
+            return res.status(400).json({ message: "Comment text and User ID are required" });
+        }
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        const newComment = {
+            userId: new mongoose.Types.ObjectId(userId),
+            commentText: commentText, 
+            datePosted: new Date(), 
+        };
 
+        post.comments.push(newComment);
+        await post.save();
+        res.status(201).json({
+            message: "Comment added successfully",
+            newComment,
+            totalComments: post.comments.length,
+        });
+    } catch (error) {
+        console.error("Error adding comment:", error);
+        res.status(500).json({ message: "Error adding comment", error });
+    }
+}
 // Comment functionality
-export const updateComment = (req, res) => {
+// Update Comment
+export const updateComment = async (req, res) => { // works
     const { id } = req.params;
-    const  {post, userID} = req.body;
-    // TODO: database logic
-    res.status(200).json({id});
+    const { postId, userId, commentId, commentText } = req.body;
+
+    try {
+        //new mongoose.Types.ObjectId(postId)
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const comment = post.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+
+        if (comment.userId.toString() !== userId) { // no auth
+            return res.status(403).json({ message: "User is not authorized to update this comment" });
+        }
+        comment.commentText = commentText;
+        await post.save(); 
+        res.status(200).json({
+            message: "Comment updated successfully",
+            updatedComment: comment
+        });
+    } catch (error) {
+        console.error("Error updating comment:", error);
+        res.status(500).json({ message: "Error updating comment", error });
+    }
 }
-export const deleteComment = (req, res) => {
+
+// Delete Comment
+export const deleteComment = async (req, res) => {
     const { id } = req.params;
-    const { post, userID } = req.body;
-    // TODO: database logic
-    res.status(200).json({id});
-}
+    const { postId, userId, commentId} = req.body;
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const comment = post.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+
+        if (comment.userId.toString() !== userId) {
+            return res.status(403).json({ message: "User is not authorized to update this comment" });
+        }
+        comment.remove();
+        await post.save();
+        res.status(200).json({message: "Comment deleted successfully", deletedCommentId: commentId});
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Error deleting comment", error });
+    }
+  }
