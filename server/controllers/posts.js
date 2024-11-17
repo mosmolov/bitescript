@@ -1,5 +1,6 @@
 import Post from "../models/posts.js";
 import Comment from "../models/comments.js";
+import Restaurant from "../models/restaurant.js";
 import mongoose from "mongoose";
 
 // Feed
@@ -11,13 +12,56 @@ export const getPosts = async (req, res) => { // works
         res.status(500).json({ message: "Error retrieving posts", error });
     }
 }
-export const createPost = async (req, res) => { //works
-    const postData = req.body; 
+export const createPost = async (req, res) => {
+    const postData = req.body;
+    console.log('Received post data:', postData); // Debug log
+
     try {
-        const newPost = await Post.create(postData); // Create a new post
-        res.status(201).json({ message: "Created Post", post: newPost });
+        // Validate required fields
+        if (!postData.author || !postData.restaurant || !postData.rating) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // First update restaurant ratings
+        const restaurantDoc = await Restaurant.findById(postData.restaurant);
+        if (!restaurantDoc) {
+            return res.status(404).json({ message: "Restaurant not found" });
+        }
+
+        const newRating = {
+            userId: postData.author,
+            rating: postData.rating,
+            food_rating: postData.food_rating || 0,
+            service_rating: postData.service_rating || 0,
+            date: new Date()
+        };
+        
+        restaurantDoc.ratings.push(newRating);
+        await restaurantDoc.save();
+
+        // Then create the post
+        const newPost = await Post.create({
+            title: postData.title,
+            content: postData.content,
+            author: postData.author,
+            restaurant: postData.restaurant,
+            rating: postData.rating,
+            food_rating: postData.food_rating || 0,
+            service_rating: postData.service_rating || 0,
+            likes: [],
+            likeCount: 0,
+            comments: []
+        });
+
+        res.status(201).json({
+            message: "Created Post",
+            post: newPost,
+            restaurantRating: restaurantDoc.averageRating
+        });
+
     } catch (error) {
-        res.status(500).json({ message: "Error creating post", error });
+        console.error('Error in createPost:', error); // Debug log
+        res.status(500).json({ message: "Error creating post", error: error.message });
     }
 }
 // Post logic
