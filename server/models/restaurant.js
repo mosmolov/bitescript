@@ -29,7 +29,6 @@ const restaurant = new mongoose.Schema({
       rating: { type: Number, required: true, min: 0, max: 5 },
       food_rating: { type: Number, min: 0, max: 5 },
       service_rating: { type: Number, min: 0, max: 5 },
-      comment: { type: String, maxLength: 500 },
       date: { type: Date, default: Date.now },
     },
   ],
@@ -58,18 +57,26 @@ restaurant.index(
 );
 
 // This middleware function runs before every save operation on a restaurant document, automatically updates the averageRating and totalRatings filed based on the current state of the ratings array
-restaurant.pre("save", function (next) {
-  // Set up a pre-save middleware on the restaurant schema
-  if (this.ratings.length > 0) {
-    // Checks if there are any ratings for this restaurant
-    this.averageRating =
-      // Use reduce() to sum up all rating values
-      this.ratings.reduce((acc, curr) => acc + curr.rating, 0) /
-      // Divides the sum by the number of ratings to get the average
-      this.ratings.length;
-    // Sets totalRatings to the current number of ratings
-    this.totalRatings = this.ratings.length;
+restaurant.pre("save", async function (next) {
+  if (this.isModified('ratings')) {  // Only run if ratings array was modified
+    if (this.ratings && this.ratings.length > 0) {
+      const sum = this.ratings.reduce((acc, curr) => {
+        return {
+          rating: acc.rating + curr.rating,
+          food_rating: acc.food_rating + (curr.food_rating || 0),
+          service_rating: acc.service_rating + (curr.service_rating || 0)
+        };
+      }, { rating: 0, food_rating: 0, service_rating: 0 });
+
+      const count = this.ratings.length;
+      this.averageRating = (sum.rating / count).toFixed(1);
+      this.totalRatings = count;
+    } else {
+      this.averageRating = 0;
+      this.totalRatings = 0;
+    }
   }
+  next();
 });
 // This middleware runs on every save, not just when ratings change
 // Might want to optimize this to run only when the ratings array is modified
