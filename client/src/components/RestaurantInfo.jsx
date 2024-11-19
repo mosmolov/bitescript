@@ -358,7 +358,7 @@ const RestaurantPage = () => {
         isOpen={showReviewModal}
         onClose={() => setShowReviewModal(false)}
         restaurant={restaurant}
-        userId={JSON.parse(localStorage.getItem("user"))._id}
+        userId={localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user"))._id : null}
       />
     </div>
   );

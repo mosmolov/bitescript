@@ -14,9 +14,19 @@ const ProfilePage = ({ user }) => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Initialize loggedInUser from localStorage
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const [loggedInUser, setLoggedInUser] = useState(storedUser);
+  // Replace the getUserId function
+  const getUserId = () => {
+    try {
+      const userData = localStorage.getItem("user");
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return null;
+    }
+  };
+
+  // Update how we initialize the state
+  const [loggedInUser, setLoggedInUser] = useState(getUserId());
 
   useEffect(() => {
     if (!loggedInUser) {

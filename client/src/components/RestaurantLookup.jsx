@@ -49,7 +49,7 @@ const RestaurantSearchPage = () => {
   };
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user"));
+    const userData = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
     setUserId(userData._id);
     if (!userData._id) {
       navigate("/login");

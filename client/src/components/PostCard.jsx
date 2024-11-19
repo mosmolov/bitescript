@@ -13,7 +13,7 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   const isLiked = post.likes?.includes(currentUser?._id);
   const [postUser, setPostUser] = useState(null);
   const [restaurantName, setRestaurantName] = useState("");

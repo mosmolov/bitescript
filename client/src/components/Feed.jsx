@@ -33,7 +33,8 @@ const Feed = () => {
   }, [currentPage]);
 
   useEffect(() => {
-    setUser(JSON.parse(localStorage.getItem("user")));
+    const storedUser = localStorage.getItem("user");
+    setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
 
   // Initial fetch and setup polling

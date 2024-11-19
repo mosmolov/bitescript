@@ -9,7 +9,10 @@ import SearchUsers from './SearchUsers';
 const Navbar = () => {
   const [user, setUser] = useState(null);
   useEffect(() => {
-    setUser(JSON.parse(localStorage.getItem("user")));
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
   return (
     <nav className="w-full bg-[#EAE8E0]">
