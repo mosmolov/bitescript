@@ -277,7 +277,7 @@ const ProfilePage = ({ user }) => {
           <div className="flex flex-col gap-2">
             <button
               type="button"
-              className={`w-fit px-4 py-2 font-semibold text-med rounded-full transition-all duration-200 ${
+              className={`w-28 px-4 py-2 font-semibold text-med rounded-full transition-all duration-200 ${
                 buttonUsage === "following"
                   ? "bg-emerald-500 text-white hover:bg-red-500 hover:text-white"
                   : buttonUsage === "edit profile"
@@ -288,7 +288,7 @@ const ProfilePage = ({ user }) => {
               disabled={buttonUsage === "loading..."}
               onMouseEnter={(e) => {
                 if (buttonUsage === "following") {
-                  e.target.textContent = "Unfollow";
+                  e.target.textContent = "unfollow";
                 }
               }}
               onMouseLeave={(e) => {
@@ -305,7 +305,7 @@ const ProfilePage = ({ user }) => {
                 onClick={handleLogout}
                 className="w-fit px-4 py-2 bg-red-500 text-white font-semibold text-med rounded-full hover:bg-red-600 transition-colors"
               >
-                Logout
+                logout
               </button>
             )}
           </div>
