@@ -131,3 +131,26 @@ export const getUserFeed = (req, res) => {
   // TODO: database logic -> getPosts and then filter with userId
   res.status(200).json({ id });
 };
+
+export const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(200).json({ users: [] });
+    }
+
+    const users = await User.find({
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { firstName: { $regex: query, $options: 'i' } },
+        { lastName: { $regex: query, $options: 'i' } }
+      ]
+    })
+    .select('username firstName lastName picture followers')
+    .limit(10);
+
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
