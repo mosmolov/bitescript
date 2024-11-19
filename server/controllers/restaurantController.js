@@ -101,3 +101,16 @@ export const filterRestaurants = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+// search restaurant by id
+export const getRestaurant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = await Restaurant.findOne({ _id: id });
+    res.status(200).json(restaurant);
+  }
+  catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

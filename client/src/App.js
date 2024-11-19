@@ -6,6 +6,7 @@ import Home from './components/Home';
 import RestaurantLookUpPage from "./components/RestaurantLookup";
 import ProfilePage from './components/ProfilePage';
 import Feed from './components/Feed';
+import RestaurantPage from './components/RestaurantInfo';
 import { useEffect, useState } from "react";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/users/:id" element={<ProfilePage user={user}/>} />
         <Route path="/search" element={<RestaurantLookUpPage />} />
         <Route path="/feed" element={<Feed/>} />
+        <Route path="/restaurant/:id" element={<RestaurantPage />} />
       </Routes>
     </Router>
   );

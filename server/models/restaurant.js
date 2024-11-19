@@ -81,6 +81,46 @@ restaurant.pre("save", async function (next) {
 // This middleware runs on every save, not just when ratings change
 // Might want to optimize this to run only when the ratings array is modified
 
+restaurant.methods.isCurrentlyOpen = function() {
+  const now = new Date();
+  const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  // Convert current time to minutes since midnight for easier comparison
+  const currentHour = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+  
+  const todayHours = this.hours.find(h => h.day === currentDay);
+  if (!todayHours) return false;
+  
+  // Convert store hours to minutes since midnight
+  const [openHour, openMinute] = todayHours.open.split(':').map(Number);
+  const [closeHour, closeMinute] = todayHours.close.split(':').map(Number);
+  const openTimeInMinutes = openHour * 60 + openMinute;
+  const closeTimeInMinutes = closeHour * 60 + closeMinute;
+  // debug logging
+  console.log('Current time:', currentTimeInMinutes);
+  console.log('Open time:', openTimeInMinutes);
+  console.log('Close time:', closeTimeInMinutes);
+  
+  return currentTimeInMinutes >= openTimeInMinutes && currentTimeInMinutes <= closeTimeInMinutes;
+};
+
+restaurant.methods.getFormattedHours = function() {
+  return this.hours.map(h => ({
+    day: h.day,
+    hours: `${formatTime(h.open)} - ${formatTime(h.close)}`
+  }));
+};
+
+// Helper function to format 24h time to 12h format
+function formatTime(time) {
+  const [hours, minutes] = time.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
 const Restaurant = mongoose.model("restaurant", restaurant);
 
 export default Restaurant;
