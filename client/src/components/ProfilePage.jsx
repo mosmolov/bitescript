@@ -1,35 +1,57 @@
 import React, { useEffect, useState } from "react";
-import logo from "../logo.png";
-import Compass from "../Compass.png";
-import Search from "../Search.png";
-import Profile from "../Profile.png";
+import Navbar from "./Navbar";
 import { Link, useNavigate, useParams } from "react-router-dom";
-
-// TODO: make nav its own component
+import EditModal from "./EditModal";
+import toast, { Toaster } from 'react-hot-toast';
 
 const ProfilePage = ({ user }) => {
   const [topRatedRestaurants, setTopRatedRestaurants] = useState([]);
   const [profileImage, setProfileImage] = useState("");
   const [profileUser, setProfileUser] = useState(null);
+  const [buttonUsage, setButtonUsage] = useState("loading...");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // Initialize loggedInUser from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const [loggedInUser, setLoggedInUser] = useState(storedUser);
+
+  useEffect(() => {
+    if (!loggedInUser) {
+      navigate("/login");
+    }
+  }, [navigate]); // Remove loggedInUser from dependencies
+
+  // First useEffect to fetch profile user data
   useEffect(() => {
     fetch(`http://localhost:5050/api/users/${id}`, {
       method: "GET",
     })
       .then((res) => res.json())
-      .then((data) => setProfileUser(data.user));
-    if (!user) window.location.href = "/login";
-    fetch("https://randomuser.me/api/")
-      .then((response) => response.json())
       .then((data) => {
-        const imageUrl = data.results[0].picture.large;
-        setProfileImage(imageUrl) // logs the large image URL
+        setProfileUser(data.user);
+        setProfileImage(data.user?.picture); // Move this inside the then block
       })
-      .catch((error) => console.error("Error:", error));
-  }, []);
+      .catch((error) => console.error("Error fetching user:", error));
+  }, [id]); // Remove profileUser from dependencies
 
+  // Button text effect
+  useEffect(() => {
+    if (!loggedInUser || !profileUser) return;
+
+    if (loggedInUser._id === profileUser._id) {
+      setButtonUsage("edit profile");
+    } else {
+      setButtonUsage(
+        loggedInUser.following?.includes(profileUser._id)
+          ? "following"
+          : "follow +"
+      );
+    }
+  }, [profileUser, loggedInUser]);
+
+  // Fetch restaurants and profile image
   useEffect(() => {
     fetch(`http://localhost:5050/api/restaurants/top-rated?page=1&limit=30`, {
       method: "GET",
@@ -40,33 +62,81 @@ const ProfilePage = ({ user }) => {
         console.error("Error fetching top-rated restaurants:", error)
       );
   }, []);
-
-  if (!profileUser) return <h1>Unknown User</h1>;
-
-  const isOwnPage = profileUser._id === user?._id;
-
-  let buttonUsage = "";
-  if (!user) buttonUsage = "log in";
-  else if (isOwnPage) buttonUsage = "edit profile";
-  else if (!user.following.includes(profileUser._id)) buttonUsage = "follow +";
-  else buttonUsage = "following";
-
-  const handleButton = () => {
+  const handleFollowAction = async () => {
+    if (!loggedInUser) {
+      navigate("/login");
+      return;
+    }
+  
+    const isFollowing = buttonUsage === "following";
+    const endpoint = isFollowing ? "unfollow" : "follow";
+  
+    try {
+      const response = await fetch(
+        `http://localhost:5050/api/users/${profileUser._id}/${endpoint}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            id: loggedInUser._id,
+          })
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+  
+      // Update loggedInUser state
+      const updatedLoggedInUser = {
+        ...loggedInUser,
+        following: isFollowing
+          ? loggedInUser.following.filter(id => id !== profileUser._id)
+          : [...new Set([...loggedInUser.following || [], profileUser._id])]
+      };
+      
+      localStorage.setItem("user", JSON.stringify(updatedLoggedInUser));
+      setLoggedInUser(updatedLoggedInUser);
+  
+      // Update profileUser with the response data
+      setProfileUser(data.user);
+      setButtonUsage(isFollowing ? "follow +" : "following");
+  
+      toast.success(data.message, {
+        duration: 2000,
+        style: {
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    } catch (error) {
+      console.error("Error updating follow status:", error);
+      toast.error("Failed to update follow status");
+    }
+  };
+  const handleButton = (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Add this to prevent event bubbling
+    
+    if (!loggedInUser) { // Check loggedInUser instead of user prop
+      navigate("/login");
+      return;
+    }
+  
     switch (buttonUsage) {
-      case "log in": {
-        navigate("../../login", { relative: true });
-        break;
-      }
       case "edit profile": {
-        alert("editting profile!");
+        setIsEditModalOpen(true);
         break;
       }
-      case "follow +": {
-        // TODO: handle follow
+      case "follow +":
+        handleFollowAction();
         break;
-      }
       case "following": {
-        // TODO: handle following
+        handleFollowAction();
         break;
       }
       default: {
@@ -75,43 +145,39 @@ const ProfilePage = ({ user }) => {
     }
   };
 
+  const handleLogout = async () => {
+    localStorage.removeItem("user"); // Remove user from localStorage
+    navigate("/login"); // Navigate to login page
+  };
+  const handleProfileUpdate = (updatedUser) => {
+    setProfileUser(updatedUser);
+    setProfileImage(updatedUser.picture || ""); // Update profile image when profile is updated
+    const loggedInUser = JSON.parse(localStorage.getItem("user"));
+    if (loggedInUser && loggedInUser._id === updatedUser._id) {
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
+  if (!profileUser) return <div>Loading...</div>;
+
   return (
     <div className="h-full bg-[#EAE8E0] flex flex-col items-center text-center">
-      <nav className="w-full px-8 flex items-center justify-between">
-        <div className="flex items-center">
-          <Link to="/">
-            <img src={logo} alt="Bitescript Logo" className="h-24 mr-2" />
-          </Link>
-        </div>
-        <div className="flex space-x-6 text-lg">
-          <Link to="/">
-            <button className="flex items-center space-x-2">
-              <img src={Compass} alt="" />
-              <span>Feed</span>
-            </button>
-          </Link>
-          <Link to="/search">
-            <button className="flex items-center space-x-2">
-              <img src={Search} alt="" />
-              <span>Search</span>
-            </button>
-          </Link>
-          {/* <Link to={user ? "/profile" : "/login"}> */}
-          <button className="flex items-center space-x-2">
-            <img src={Profile} alt="" />
-            {/* <Link to="/profile">Profile</Link> */}
-            <span>Profile</span>
-          </button>
-          {/* </Link> */}
-        </div>
-      </nav>
+      <Toaster position="top-right" />
+      <Navbar />
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-row items-center justify-between p-6">
+          {/* Profile Image and Info */}
           <div className="flex flex-row gap-4">
-            <div className="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-white text-2xl font-bold">
-              {/* {profileUser.firstName[0].toUpperCase()}
-              {profileUser.lastName[0].toUpperCase()} */}
-              <img src={profileImage} alt="Profile" className="w-20 h-20 rounded-full" />
+            <div className="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                `${profileUser.firstName[0].toUpperCase()}${profileUser.lastName[0].toUpperCase()}`
+              )}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
@@ -122,29 +188,57 @@ const ProfilePage = ({ user }) => {
             </div>
           </div>
 
+          {/* Followers/Following Count */}
           <div className="flex flex-row gap-5">
             <div className="text-center">
               <p className="text-xl font-bold text-gray-900">
-                {profileUser.followers.length}
+                {profileUser.followers?.length || 0}
               </p>
               <p className="text-gray-500">Followers</p>
             </div>
-
             <div className="text-center">
               <p className="text-xl font-bold text-gray-900">
-                {profileUser.following.length}
+                {profileUser.following?.length || 0}
               </p>
               <p className="text-gray-500">Following</p>
             </div>
           </div>
 
-          <div>
+          {/* Edit Profile and Logout Buttons */}
+          <div className="flex flex-col gap-2">
             <button
-              className="w-fit px-4 py-2 bg-[#DFB839] text-black font-semibold text-med rounded-full"
+              type="button"
+              className={`w-fit px-4 py-2 font-semibold text-med rounded-full transition-all duration-200 ${
+                buttonUsage === "following"
+                  ? "bg-emerald-500 text-white hover:bg-red-500 hover:text-white"
+                  : buttonUsage === "edit profile"
+                  ? "bg-[#DFB839] text-black hover:bg-[#c9a633]"
+                  : "bg-[#DFB839] text-black hover:bg-[#c9a633]"
+              }`}
               onClick={handleButton}
+              disabled={buttonUsage === "loading..."}
+              onMouseEnter={(e) => {
+                if (buttonUsage === "following") {
+                  e.target.textContent = "Unfollow";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (buttonUsage === "following") {
+                  e.target.textContent = "following";
+                }
+              }}
             >
-              {buttonUsage}
+              {buttonUsage || "loading..."}
             </button>
+            {buttonUsage === "edit profile" && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-fit px-4 py-2 bg-red-500 text-white font-semibold text-med rounded-full hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
 
@@ -184,6 +278,13 @@ const ProfilePage = ({ user }) => {
           </SlidingCards>
         </div>
       </div>
+
+      <EditModal
+        user={profileUser}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onUpdate={handleProfileUpdate}
+      />
     </div>
   );
 };
@@ -192,32 +293,30 @@ const RestaurantCard = ({ name, location }) => {
   const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
-    // Fetch the random image from the Foodish API
     const fetchImage = async () => {
       try {
         const response = await fetch("https://foodish-api.com/api");
         const data = await response.json();
-        setImageUrl(data.image); // Set the image URL
+        setImageUrl(data.image);
       } catch (error) {
         console.error("Error fetching image:", error);
       }
     };
 
-    fetchImage(); // Call the async function inside useEffect
+    fetchImage();
   }, []);
 
   return (
     <div
       className="h-40 w-40 bg-white rounded-lg shadow-md flex flex-col items-center justify-center"
       style={{
-        backgroundImage: `url(${imageUrl})`, // Apply the random image as the background
-        backgroundSize: "cover", // Ensure the image covers the card
-        backgroundPosition: "center", // Center the image
-        backgroundRepeat: "no-repeat", // Prevent image tiling
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
-      <h4 className="font-bold text-white">{name}</h4>{" "}
-      {/* Use white text for better contrast */}
+      <h4 className="font-bold text-white">{name}</h4>
       <p className="text-sm text-white">{location}</p>
     </div>
   );

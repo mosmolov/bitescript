@@ -45,6 +45,13 @@ const userSchema = new mongoose.Schema({
   timestamps: true, // Automatically add createdAt and updatedAt fields
 });
 
+// Add text indexes before creating the model
+userSchema.index({
+  username: 'text',
+  firstName: 'text',
+  lastName: 'text'
+});
+
 // Create and export the User model
 const User = mongoose.model('User', userSchema);
 

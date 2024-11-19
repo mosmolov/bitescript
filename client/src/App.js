@@ -5,15 +5,11 @@ import CreateAccountPage from './components/CreateAccountPage'
 import Home from './components/Home';
 import RestaurantLookUpPage from "./components/RestaurantLookup";
 import ProfilePage from './components/ProfilePage';
+import Feed from './components/Feed';
 import { useEffect, useState } from "react";
 
 function App() {
   const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log(token);
-  });
 
   return (
     <Router>
@@ -23,6 +19,7 @@ function App() {
         <Route path="/create-account" element={<CreateAccountPage/>} />
         <Route path="/users/:id" element={<ProfilePage user={user}/>} />
         <Route path="/search" element={<RestaurantLookUpPage />} />
+        <Route path="/feed" element={<Feed/>} />
       </Routes>
     </Router>
   );

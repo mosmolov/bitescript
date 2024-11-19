@@ -1,36 +1,11 @@
-import logo from "../logo.png";
-import Compass from "../Compass.png";
-import Search from "../Search.png";
-import Profile from "../Profile.png";
+import Navbar from "./Navbar";
 import React from "react";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 export const Home = ({user}) => {
+  const navigate = useNavigate();
   return (
     <div className="h-screen bg-[#EAE8E0] flex flex-col items-center text-center">
-      <nav className="w-full py-4 px-8 flex items-center justify-between">
-        <div className="flex items-center">
-          <img src={logo} alt="Bitescript Logo" className="h-24 mr-2" />
-        </div>
-        <div className="flex space-x-6 text-lg">
-          <button className="flex items-center space-x-2">
-            <img src={Compass} alt="" />
-            <span>Feed</span>
-          </button>
-          <Link to="/search">
-            <button className="flex items-center space-x-2">
-              <img src={Search} alt="" />
-              <span>Search</span>
-            </button>
-          </Link>
-          <button className="flex items-center space-x-2">
-            {/* <Link to={user ? "/profile" : "/login"}>Profile</Link> */}
-            <span>Profile</span>
-            <img src={Profile} alt=""/>
-          </button>
-        </div>
-      </nav>
-
+      <Navbar />
       <main className="mt-20">
         <h1
           className="text-5xl font-handwritten mb-10"
