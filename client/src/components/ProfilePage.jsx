@@ -94,7 +94,6 @@ const ProfilePage = ({ user }) => {
             return res.json();
         })
         .then((data) => {
-          console.log(data);
             if (!Array.isArray(data) || data.length === 0) {
                 setUserTopRestaurants(topRatedRestaurants);
                 return;
@@ -325,6 +324,7 @@ const ProfilePage = ({ user }) => {
             {userTopRestaurants.slice(0, 20).map((restaurant) => (
               <RestaurantCard
                 key={restaurant._id}
+                id={restaurant._id}
                 name={restaurant.name}
                 location={`${restaurant.city}, ${restaurant.state}`}
               />
@@ -343,6 +343,7 @@ const ProfilePage = ({ user }) => {
             {topRatedRestaurants.map((restaurant) => (
               <RestaurantCard
                 key={restaurant._id}
+                id={restaurant._id}
                 name={restaurant.name}
                 location={`${restaurant.city}, ${restaurant.state}`}
               />
@@ -373,8 +374,9 @@ const ProfilePage = ({ user }) => {
   );
 };
 
-const RestaurantCard = ({ name, location }) => {
+const RestaurantCard = ({ id, name, location }) => {
   const [imageUrl, setImageUrl] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -401,10 +403,10 @@ const RestaurantCard = ({ name, location }) => {
         <div className="absolute inset-0 bg-black opacity-40"></div>
       </div>
   
-      <div className="relative z-10">
+      <button className="relative z-10" onClick={() => navigate(`/restaurant/${id}`)}>
         <h4 className="font-bold text-white">{name}</h4>
         <p className="text-sm text-white">{location}</p>
-      </div>
+      </button>
     </div>
   );
   

@@ -183,9 +183,9 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
                 {postUser?.firstName || 'Anonymous'} {postUser?.lastName || ''}
               </p>
               {postUser?.username && (
-                <span className="text-gray-500 text-sm">
+                <button className="text-gray-500 text-sm hover:underline" onClick={() => navigate(`/users/${postUser._id}`)}>
                   @{postUser.username}
-                </span>
+                </button>
               )}
             </div>
             <p className="text-sm text-gray-500">
