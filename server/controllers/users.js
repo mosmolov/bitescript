@@ -15,8 +15,10 @@ export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { password, username, firstName, lastName, picture } = req.body;
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const updatedFields = {};
-    if (password) updatedFields.password = password;
+    if (password) updatedFields.password = hashedPassword;
     if (username) updatedFields.username = username;
     if (firstName) updatedFields.firstName = firstName;
     if (lastName) updatedFields.lastName = lastName;
