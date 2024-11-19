@@ -11,15 +11,15 @@ const ListModal = ({ user, type, isOpen, onClose, onUpdate }) => {
     setList([]);
 
     const fetchUsers = async () => {
-        const users = await Promise.all(
-          user[type].map(id =>
-            fetch(`http://localhost:5050/api/users/${id}`)
-              .then(res => res.json())
-              .then(data => data.user)
-          )
-    );
-    setList(users);
-  };
+      const users = await Promise.all(
+        user[type].map(id =>
+          fetch(`http://localhost:5050/api/users/${id}`)
+          .then(res => res.json())
+          .then(data => data.user)
+        )
+      );
+      setList(users);
+    };
   
     fetchUsers();
   }, [user, type]);

@@ -7,6 +7,7 @@ import {
   UserCircle,
   UserCog,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const PostCard = ({ post, onUpdate, refreshPost }) => {
   const [imageUrl, setImageUrl] = useState("");
@@ -17,6 +18,8 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
   const isLiked = post.likes?.includes(currentUser?._id);
   const [postUser, setPostUser] = useState(null);
   const [restaurantName, setRestaurantName] = useState("");
+  const [comments, setComments] = useState([]);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -44,6 +47,7 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
     };
     fetchUser();
   }, [post.author]);
+
   useEffect(() => {
     if (showComments) {
       const intervalId = setInterval(() => {
@@ -53,6 +57,28 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
       return () => clearInterval(intervalId);
     }
   }, [showComments, refreshPost]);
+
+  useEffect(() => {
+    setComments([]);
+
+    const fetchComments = async () => {
+      const users = await Promise.all(
+        post.comments.map(comment =>
+          fetch(`http://localhost:5050/api/users/${comment.userId}`)
+          .then(res => res.json())
+          .then(data => {
+            return {
+              ...comment,
+              user: data.user
+            } 
+          })
+        )
+      );
+      setComments(users);
+    };
+  
+    fetchComments();
+  }, [post.comments])
 
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -130,7 +156,9 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
     }
   };
 
-  console.log(post.comments)
+  const handleCommentClick = (id) => {
+    navigate(`/users/${id}`)
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -253,15 +281,28 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
             </form>
 
             <div className="space-y-3">
-              {post.comments?.map((comment) => (
+              {comments.map((comment) => (
                 <div key={comment._id} className="flex items-start space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <UserCircle className="w-5 h-5 text-gray-500" />
+                  <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                    {comment.user.picture ? (
+                      <img
+                        src={comment.user.picture}
+                        alt={comment.user.username}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      `${comment.user.firstName[0]}${comment.user.lastName[0]}`
+                    )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-sm">
-                      {comment.userId?.username}
-                    </p>
+                    <div className="flex flex-row gap-2">
+                      <p className="font-medium text-sm">
+                        {comment.user.firstName} {comment.user.lastName}
+                      </p>
+                      <button className="font-medium text-sm text-gray-500 hover:underline" onClick={() => handleCommentClick(comment.userId)}>
+                        @{comment.user.username}
+                      </button>
+                    </div>
                     <p className="text-gray-700">{comment.commentText}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(comment.datePosted).toLocaleDateString()}
