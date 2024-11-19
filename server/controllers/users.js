@@ -1,69 +1,133 @@
 import User from "../models/user.js";
 
 export const getUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const user = await User.findById(id);
-        res.status(200).json({message: "Success", user});
-    } catch (error) {
-        res.status(404).json({ message: error.message });
-    }
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    res.status(200).json({ message: "Success", user });
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 };
 
 export const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { password, username, firstName, lastName, picture } = req.body;
+  try {
+    const { id } = req.params;
+    const { password, username, firstName, lastName, picture } = req.body;
 
-        const updatedFields = {}
-        if (password) updatedFields.password = password;
-        if (username) updatedFields.username = username;
-        if (firstName) updatedFields.firstName = firstName;
-        if (lastName) updatedFields.lastName = lastName;
-        if (picture) updatedFields.picture = picture;
+    const updatedFields = {};
+    if (password) updatedFields.password = password;
+    if (username) updatedFields.username = username;
+    if (firstName) updatedFields.firstName = firstName;
+    if (lastName) updatedFields.lastName = lastName;
+    if (picture) updatedFields.picture = picture;
 
-        const updatedUser = await User.findByIdAndUpdate(id, updatedFields, {new: true})
+    const updatedUser = await User.findByIdAndUpdate(id, updatedFields, {
+      new: true,
+    });
 
-        res.status(200).json(updatedUser);
-      } catch (error) {
-        res.status(404).json({ message: error.message });
-      }
-}
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
 
 export const followUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        // TODO: update once auth is done
-        const loggedInUserId = "12345";
+  try {
+    const targetUserId = req.params.id;
+    const { id: loggedInUserId } = req.body;
 
-        const userToFollow = await User.findById(id);
-        const loggedInUser = await User.findById(loggedInUserId);
+    if (!targetUserId || !loggedInUserId) {
+      return res.status(400).json({ message: "Missing required IDs" });
+    }
 
-        await User.findByIdAndUpdate(id, {followers: [loggedInUserId, ...userToFollow.followers]});
-        await User.findByIdAndUpdate(loggedInUserId, {following: [id, ...loggedInUser.following]});
-
-        res.status(200);
-      } catch (error) {
-        res.status(404).json({ message: error.message });
-      }
-}
-
-export const unfollowUser = async (req, res) => {
-    const { id } = req.params;
-    // TODO: update once auth is done
-    const loggedInUserId = "12345";
-
-    const userToUnfollow = await User.findById(id);
+    const userToFollow = await User.findById(targetUserId);
     const loggedInUser = await User.findById(loggedInUserId);
 
-    await User.findByIdAndUpdate(id, {followers: [userToUnfollow.followers.filter(follower => follower !== loggedInUserId)]});
-    await User.findByIdAndUpdate(loggedInUserId, {following: [loggedInUser.following.filter(following => following !== id)]});
+    if (!userToFollow || !loggedInUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    res.status(200);
-}
+    // Check if already following
+    if (userToFollow.followers.includes(loggedInUserId)) {
+      return res.status(400).json({ message: "Already following this user" });
+    }
+
+    // Update both users
+    const updatedUserToFollow = await User.findByIdAndUpdate(
+      targetUserId,
+      {
+        $addToSet: { followers: loggedInUserId }
+      },
+      { new: true }
+    );
+
+    await User.findByIdAndUpdate(
+      loggedInUserId,
+      {
+        $addToSet: { following: targetUserId }
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Followed successfully",
+      user: updatedUserToFollow
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const unfollowUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id; // ID of user to unfollow
+    const { id: loggedInUserId } = req.body; // Fix: properly destructure from body
+
+    if (!targetUserId || !loggedInUserId) {
+      return res.status(400).json({ message: "Missing required IDs" });
+    }
+
+    const userToUnfollow = await User.findById(targetUserId);
+    const loggedInUser = await User.findById(loggedInUserId);
+
+    if (!userToUnfollow || !loggedInUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if not following
+    if (!userToUnfollow.followers.includes(loggedInUserId)) {
+      return res.status(400).json({ message: "Not following this user" });
+    }
+
+    // Update both users
+    const updatedUserToUnfollow = await User.findByIdAndUpdate(
+      targetUserId,
+      {
+        $pull: { followers: loggedInUserId }
+      },
+      { new: true }
+    );
+
+    const updatedLoggedInUser = await User.findByIdAndUpdate(
+      loggedInUserId,
+      {
+        $pull: { following: targetUserId }
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Unfollowed successfully",
+      user: updatedUserToUnfollow
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 export const getUserFeed = (req, res) => {
-    const { id } = req.params;
-    // TODO: database logic -> getPosts and then filter with userId
-    res.status(200).json({id});
-}
+  const { id } = req.params;
+  // TODO: database logic -> getPosts and then filter with userId
+  res.status(200).json({ id });
+};

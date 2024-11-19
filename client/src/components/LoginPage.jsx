@@ -1,5 +1,5 @@
-import React from 'react';
-import logo from "../logo.png";
+import React, { useEffect } from 'react';
+import logo from "../images/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage = ({setUser}) => {
@@ -8,7 +8,10 @@ const LoginPage = ({setUser}) => {
     password: ""
   });
   const navigate = useNavigate()
-
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) navigate(`../users/${user._id}`, { relative: "path" });
+  }, [navigate]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -33,6 +36,7 @@ const LoginPage = ({setUser}) => {
           // TODO: instead of navigate to home, navigate to last page in hisory
           // ex: if they want to follow someone, they get navigated back to page after log in
           localStorage.setItem("token", data.token)
+          localStorage.setItem("user", JSON.stringify(data.user))
           navigate(`../users/${data.user._id}`, { relative: "path" });
         }
       })

@@ -19,6 +19,7 @@ export const createPost = async (req, res) => {
     try {
         // Validate required fields
         if (!postData.author || !postData.restaurant || !postData.rating) {
+            console.log('Missing required fields:', postData); // Debug log
             return res.status(400).json({ message: "Missing required fields" });
         }
 

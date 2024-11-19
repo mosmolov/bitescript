@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from "react";
-import logo from "../logo.png";
-import Compass from "../Compass.png";
-import Search from "../Search.png";
-import Profile from "../Profile.png";
-import { Link } from "react-router-dom";
+import Navbar from "./Navbar";
+import { Link, useNavigate } from "react-router-dom";
+import ReviewModal from "./ReviewModal";
 const RestaurantSearchPage = () => {
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [restaurants, setRestaurants] = useState([]);
   const [countries, setCountries] = useState({});
+  const [userId, setUserId] = useState(null);
+  const navigate = useNavigate();
+  const handleOpenModal = (restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRestaurant(null);
+    setIsModalOpen(false);
+  };
+
   const getCountryFromCoordinates = async (coordinates, restaurantId) => {
     try {
       const [lng, lat] = coordinates;
@@ -32,6 +44,11 @@ const RestaurantSearchPage = () => {
     setSearchQuery(e.target.value);
   };
   useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    setUserId(userData._id);
+    if (!userData._id) {
+      navigate("/login");
+    }
     const fetchRestaurants = async () => {
       if (searchQuery) {
         try {
@@ -64,34 +81,7 @@ const RestaurantSearchPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#EAE8E0] p-4">
-      <nav className="w-full px-8 flex items-center justify-between">
-        <div className="flex items-center">
-          <Link to="/">
-            <img src={logo} alt="Bitescript Logo" className="h-24 mr-2" />
-          </Link>
-        </div>
-        <div className="flex space-x-6 text-lg">
-          <Link to="/">
-            <button className="flex items-center space-x-2">
-              <img src={Compass} alt="" />
-              <span>Feed</span>
-            </button>
-          </Link>
-          <Link to="/search">
-            <button className="flex items-center space-x-2">
-              <img src={Search} alt="" />
-              <span>Search</span>
-            </button>
-          </Link>
-          {/* <Link to={"/profile"}> */}
-            <button className="flex items-center space-x-2">
-              <img src={Profile} alt="" />
-              <span>Profile</span>
-              {/* <Link to="/profile">Profile</Link> */}
-            </button>
-          {/* </Link> */}
-        </div>
-      </nav>
+     <Navbar />
       <div className="w-full max-w-md mx-auto">
         <div className="flex items-center mb-6 justify-center align-center">
           {/* <button className="text-2xl mr-4">&#x2190;</button> */}
@@ -154,10 +144,21 @@ const RestaurantSearchPage = () => {
                 )}
               </p>
             </div>
-            <button className="text-2xl">+</button>
+            <button
+              className="text-2xl"
+              onClick={() => handleOpenModal(restaurant)}
+            >
+              +
+            </button>
           </div>
         ))}
       </div>
+      <ReviewModal
+        restaurant={selectedRestaurant}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        userId={userId}
+      />
     </div>
   );
 };

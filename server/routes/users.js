@@ -6,11 +6,11 @@ const router = express.Router();
 
 // User Information
 router.get("/:id", getUser);
-router.patch("/:id", verifyToken, updateUser);
+router.patch("/:id", updateUser);
 
 // User Interaction
-router.post("/:id/follow", verifyToken, followUser);
-router.delete("/:id/follow", verifyToken, unfollowUser);
+router.put("/:id/follow", followUser);
+router.put("/:id/unfollow", unfollowUser);
 
 // Feed
 router.get("/:id/feed", getUserFeed);
