@@ -26,7 +26,6 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
         console.error("Error fetching image:", error);
       }
     };
-
     fetchImage();
   }, []);
 
@@ -106,9 +105,9 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-            {post.author?.profileImage ? (
+            {post.author?.picture ? (
               <img
-                src={post.author.profileImage}
+                src={post.author.picture}
                 alt={`${post.author.firstName} ${post.author.lastName}`}
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -123,9 +122,11 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
               <p className="font-medium">
                 {post.author?.firstName} {post.author?.lastName}
               </p>
-              <span className="text-gray-500 text-sm">
-                @{post.author?.username}
-              </span>
+              {post.author?.username && (
+                <span className="text-gray-500 text-sm">
+                  @{post.author.username}
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500">
               {new Date(post.createdAt).toLocaleDateString("en-US", {
