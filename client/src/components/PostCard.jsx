@@ -13,9 +13,10 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   const isLiked = post.likes?.includes(currentUser?._id);
-
+  const [postUser, setPostUser] = useState(null);
+  const [restaurantName, setRestaurantName] = useState("");
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -29,7 +30,20 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
 
     fetchImage();
   }, []);
-
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5050/api/users/${post.author}`
+        );
+        const data = await response.json();
+        setPostUser(data.user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+    fetchUser();
+  }, [post.author]);
   useEffect(() => {
     if (showComments) {
       const intervalId = setInterval(() => {
@@ -39,6 +53,21 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
       return () => clearInterval(intervalId);
     }
   }, [showComments, refreshPost]);
+
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      if (post.restaurant) {
+        try {
+          const response = await fetch(`http://localhost:5050/api/restaurants/${post.restaurant}`);
+          const data = await response.json();
+          setRestaurantName(data.name);
+        } catch (err) {
+          console.error("Error fetching restaurant:", err);
+        }
+      }
+    };
+    fetchRestaurant();
+  }, [post.restaurant]);
 
   const handleLike = async () => {
     if (!currentUser || isSubmitting) return;
@@ -106,26 +135,28 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-            {post.author?.profileImage ? (
+            {postUser?.picture ? (
               <img
-                src={post.author.profileImage}
-                alt={`${post.author.firstName} ${post.author.lastName}`}
+                src={postUser.picture}
+                alt={`${postUser?.firstName || 'User'}`}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-[#DFB839] flex items-center justify-center text-white font-bold text-lg">
-                {post.author?.firstName?.[0]?.toUpperCase() || "U"}
+                {postUser?.firstName?.[0]?.toUpperCase() || "U"}
               </div>
             )}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <p className="font-medium">
-                {post.author?.firstName} {post.author?.lastName}
+                {postUser?.firstName || 'Anonymous'} {postUser?.lastName || ''}
               </p>
-              <span className="text-gray-500 text-sm">
-                @{post.author?.username}
-              </span>
+              {postUser?.username && (
+                <span className="text-gray-500 text-sm">
+                  @{postUser.username}
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500">
               {new Date(post.createdAt).toLocaleDateString("en-US", {
@@ -144,7 +175,15 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
 
       <div className="px-4 pb-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">{post.title}</h2>
+          <div>
+            <h2 className="text-xl font-bold">{post.title}</h2>
+            {post.restaurant && (
+              <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                <Utensils className="w-4 h-4" />
+                {restaurantName}
+              </p>
+            )}
+          </div>
           {(post.food_rating || post.service_rating) && (
             <div className="flex items-center gap-3 text-sm">
               {post.food_rating && (

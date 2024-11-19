@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ReviewModal from "./ReviewModal";
 const RestaurantSearchPage = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -43,8 +43,13 @@ const RestaurantSearchPage = () => {
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
+
+  const handleRestaurantClick = (restaurantId) => {
+    navigate(`/restaurant/${restaurantId}`);
+  };
+
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user"));
+    const userData = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
     setUserId(userData._id);
     if (!userData._id) {
       navigate("/login");
@@ -106,7 +111,8 @@ const RestaurantSearchPage = () => {
         {restaurants.map((restaurant) => (
           <div
             key={restaurant.id}
-            className="bg-white border border-black rounded-xl p-4 mb-4 flex justify-between items-center relative"
+            className="bg-white border border-black rounded-xl p-4 mb-4 flex justify-between items-center relative cursor-pointer"
+            onClick={() => handleRestaurantClick(restaurant._id)}
           >
             {/* Rating Badge */}
             <div
@@ -146,7 +152,10 @@ const RestaurantSearchPage = () => {
             </div>
             <button
               className="text-2xl"
-              onClick={() => handleOpenModal(restaurant)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenModal(restaurant);
+              }}
             >
               +
             </button>

@@ -9,8 +9,11 @@ const LoginPage = ({setUser}) => {
   });
   const navigate = useNavigate()
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) navigate(`../users/${user._id}`, { relative: "path" });
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      const user = JSON.parse(userString);
+      if (user) navigate(`../users/${user._id}`, { relative: "path" });
+    }
   }, [navigate]);
   const handleChange = (e) => {
     const { name, value } = e.target;

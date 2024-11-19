@@ -12,6 +12,31 @@ export const getPosts = async (req, res) => { // works
         res.status(500).json({ message: "Error retrieving posts", error });
     }
 }
+// Get All of a User's Posts
+export const getUserPosts = async (req, res) => {
+    const { id } = req.params;
+    try {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid user ID format" });
+        }
+
+        const posts = await Post.find({ author: id })
+            .populate('restaurant', 'name city state')
+            .sort({ createdAt: -1 });
+
+        if (!posts) {
+            return res.status(404).json({ message: "No posts found" });
+        }
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error in getUserPosts:", error);
+        res.status(500).json({ 
+            message: "Error retrieving posts", 
+            error: error.message 
+        });
+    }
+}
 export const createPost = async (req, res) => {
     const postData = req.body;
     console.log('Received post data:', postData); // Debug log
@@ -212,3 +237,19 @@ export const deleteComment = async (req, res) => {
       res.status(500).json({ message: "Error deleting comment", error });
     }
   }
+
+export const getPostsForRestaurant = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const posts = await Post.find({ restaurant: id })
+            .sort({ createdAt: -1 }); // Sort by newest first
+        if (!posts) {
+            return res.status(404).json({ message: "No posts found" });
+        }
+        
+        res.status(200).json({ posts }); // Wrap posts in an object
+    } catch (error) {
+        console.error('Error in getPostsForRestaurant:', error);
+        res.status(500).json({ message: "Error retrieving posts", error: error.message });
+    }
+}

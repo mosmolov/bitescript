@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import EditModal from "./EditModal";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
 const ProfilePage = ({ user }) => {
   const [topRatedRestaurants, setTopRatedRestaurants] = useState([]);
+  const [userTopRestaurants, setUserTopRestaurants] = useState([]); // Ensure it's initialized as an array
   const [profileImage, setProfileImage] = useState("");
   const [profileUser, setProfileUser] = useState(null);
   const [buttonUsage, setButtonUsage] = useState("loading...");
@@ -13,9 +14,19 @@ const ProfilePage = ({ user }) => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Initialize loggedInUser from localStorage
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const [loggedInUser, setLoggedInUser] = useState(storedUser);
+  // Replace the getUserId function
+  const getUserId = () => {
+    try {
+      const userData = localStorage.getItem("user");
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return null;
+    }
+  };
+
+  // Update how we initialize the state
+  const [loggedInUser, setLoggedInUser] = useState(getUserId());
 
   useEffect(() => {
     if (!loggedInUser) {
@@ -62,15 +73,69 @@ const ProfilePage = ({ user }) => {
         console.error("Error fetching top-rated restaurants:", error)
       );
   }, []);
+
+  // Modify the useEffect that fetches user's posts
+  useEffect(() => {
+    if (!profileUser) return;
+
+    // Reset userTopRestaurants before fetching new data
+    setUserTopRestaurants([]);
+
+    fetch(`http://localhost:5050/api/posts/${profileUser._id}`, {
+        method: "GET",
+    })
+        .then((res) => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then((data) => {
+          console.log(data);
+            if (!Array.isArray(data) || data.length === 0) {
+                setUserTopRestaurants(topRatedRestaurants);
+                return;
+            }
+
+            // Create a Set to track unique restaurant IDs
+            const uniqueRestaurantIds = new Set();
+            const fetchPromises = data
+                .filter(post => {
+                    // Only include restaurants we haven't seen yet
+                    if (uniqueRestaurantIds.has(post.restaurant)) return false;
+                    uniqueRestaurantIds.add(post.restaurant);
+                    return true;
+                })
+                .map(post =>
+                    fetch(`http://localhost:5050/api/restaurants/${post.restaurant}`)
+                        .then(res => res.json())
+                        .catch(error => {
+                            console.error(`Error fetching restaurant ${post.restaurant}:`, error);
+                            return null;
+                        })
+                );
+
+            Promise.all(fetchPromises)
+                .then(restaurants => {
+                    const validRestaurants = restaurants.filter(r => r != null);
+                    setUserTopRestaurants(validRestaurants);
+                });
+        })
+        .catch((error) => {
+            console.error("Error fetching user's posts:", error);
+            setUserTopRestaurants(topRatedRestaurants);
+        });
+}, [profileUser, topRatedRestaurants]);
+
   const handleFollowAction = async () => {
     if (!loggedInUser) {
       navigate("/login");
       return;
     }
-  
+
     const isFollowing = buttonUsage === "following";
     const endpoint = isFollowing ? "unfollow" : "follow";
-  
+
     try {
       const response = await fetch(
         `http://localhost:5050/api/users/${profileUser._id}/${endpoint}`,
@@ -79,33 +144,33 @@ const ProfilePage = ({ user }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             id: loggedInUser._id,
-          })
+          }),
         }
       );
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const data = await response.json();
-  
+
       // Update loggedInUser state
       const updatedLoggedInUser = {
         ...loggedInUser,
         following: isFollowing
-          ? loggedInUser.following.filter(id => id !== profileUser._id)
-          : [...new Set([...loggedInUser.following || [], profileUser._id])]
+          ? loggedInUser.following.filter((id) => id !== profileUser._id)
+          : [...new Set([...(loggedInUser.following || []), profileUser._id])],
       };
-      
+
       localStorage.setItem("user", JSON.stringify(updatedLoggedInUser));
       setLoggedInUser(updatedLoggedInUser);
-  
+
       // Update profileUser with the response data
       setProfileUser(data.user);
       setButtonUsage(isFollowing ? "follow +" : "following");
-  
+
       toast.success(data.message, {
         duration: 2000,
         style: {
@@ -121,12 +186,13 @@ const ProfilePage = ({ user }) => {
   const handleButton = (e) => {
     e.preventDefault();
     e.stopPropagation(); // Add this to prevent event bubbling
-    
-    if (!loggedInUser) { // Check loggedInUser instead of user prop
+
+    if (!loggedInUser) {
+      // Check loggedInUser instead of user prop
       navigate("/login");
       return;
     }
-  
+
     switch (buttonUsage) {
       case "edit profile": {
         setIsEditModalOpen(true);
@@ -247,10 +313,13 @@ const ProfilePage = ({ user }) => {
             className="text-4xl text-left font-handwritten font-bold text-gray-900"
             style={{ fontFamily: '"Just Me Again Down Here", cursive' }}
           >
-            My top 20
+            {profileUser._id === loggedInUser?._id
+              ? "My"
+              : `${profileUser.firstName}'s`}{" "}
+            top 20
           </h3>
           <SlidingCards>
-            {topRatedRestaurants.slice(0, 20).map((restaurant) => (
+            {userTopRestaurants.slice(0, 20).map((restaurant) => (
               <RestaurantCard
                 key={restaurant._id}
                 name={restaurant.name}
