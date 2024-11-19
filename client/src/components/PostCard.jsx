@@ -130,6 +130,8 @@ const PostCard = ({ post, onUpdate, refreshPost }) => {
     }
   };
 
+  console.log(post.comments)
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
       <div className="p-4 flex items-center justify-between">

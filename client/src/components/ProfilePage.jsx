@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import { useNavigate, useParams } from "react-router-dom";
 import EditModal from "./EditModal";
+import ListModal from "./ListModal";
 import toast, { Toaster } from "react-hot-toast";
 
 const ProfilePage = ({ user }) => {
@@ -11,6 +12,8 @@ const ProfilePage = ({ user }) => {
   const [profileUser, setProfileUser] = useState(null);
   const [buttonUsage, setButtonUsage] = useState("loading...");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
+  const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -81,7 +84,7 @@ const ProfilePage = ({ user }) => {
     // Reset userTopRestaurants before fetching new data
     setUserTopRestaurants([]);
 
-    fetch(`http://localhost:5050/api/posts/${profileUser._id}`, {
+    fetch(`http://localhost:5050/api/posts/user/${profileUser._id}`, {
         method: "GET",
     })
         .then((res) => {
@@ -256,18 +259,18 @@ const ProfilePage = ({ user }) => {
 
           {/* Followers/Following Count */}
           <div className="flex flex-row gap-5">
-            <div className="text-center">
+            <button className="text-center" onClick={() => setIsFollowersModalOpen(true)}>
               <p className="text-xl font-bold text-gray-900">
                 {profileUser.followers?.length || 0}
               </p>
               <p className="text-gray-500">Followers</p>
-            </div>
-            <div className="text-center">
+            </button>
+            <button className="text-center" onClick={() => setIsFollowingModalOpen(true)}>
               <p className="text-xl font-bold text-gray-900">
                 {profileUser.following?.length || 0}
               </p>
               <p className="text-gray-500">Following</p>
-            </div>
+            </button>
           </div>
 
           {/* Edit Profile and Logout Buttons */}
@@ -354,6 +357,18 @@ const ProfilePage = ({ user }) => {
         onClose={() => setIsEditModalOpen(false)}
         onUpdate={handleProfileUpdate}
       />
+      <ListModal 
+        user={profileUser}
+        isOpen={isFollowingModalOpen}
+        type="following"
+        onClose={() => setIsFollowingModalOpen(false)}
+      />
+      <ListModal 
+        user={profileUser}
+        isOpen={isFollowersModalOpen}
+        type="followers"
+        onClose={() => setIsFollowersModalOpen(false)}
+      />
     </div>
   );
 };
@@ -376,19 +391,23 @@ const RestaurantCard = ({ name, location }) => {
   }, []);
 
   return (
-    <div
-      className="h-40 w-40 bg-white rounded-lg shadow-md flex flex-col items-center justify-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <h4 className="font-bold text-white">{name}</h4>
-      <p className="text-sm text-white">{location}</p>
+    <div className="relative h-40 w-40 bg-white rounded-lg shadow-md flex flex-col items-center justify-center">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${imageUrl})`,
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-40"></div>
+      </div>
+  
+      <div className="relative z-10">
+        <h4 className="font-bold text-white">{name}</h4>
+        <p className="text-sm text-white">{location}</p>
+      </div>
     </div>
   );
+  
 };
 
 const SlidingCards = ({ children }) => {
