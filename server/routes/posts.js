@@ -6,7 +6,7 @@ const router = express.Router();
 // Feed
 router.get("/", getPosts); 
 router.post("/", createPost); 
-router.get("/:id", getUserPosts);
+router.get("/user/:id", getUserPosts);
 router.get("/restaurant/:id", getPostsForRestaurant);
 //Post Logic
 router.get("/:id",getPost); // include likes and comments

@@ -21,7 +21,6 @@ export const getUserPosts = async (req, res) => {
         }
 
         const posts = await Post.find({ author: id })
-            .populate('restaurant', 'name city state')
             .sort({ createdAt: -1 });
 
         if (!posts) {
