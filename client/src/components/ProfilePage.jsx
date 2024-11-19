@@ -277,7 +277,7 @@ const ProfilePage = ({ user }) => {
           <div className="flex flex-col gap-2">
             <button
               type="button"
-              className={`w-28 px-4 py-2 font-semibold text-med rounded-full transition-all duration-200 ${
+              className={`w-32 px-4 py-2 font-semibold text-med rounded-full transition-all duration-200 ${
                 buttonUsage === "following"
                   ? "bg-emerald-500 text-white hover:bg-red-500 hover:text-white"
                   : buttonUsage === "edit profile"
